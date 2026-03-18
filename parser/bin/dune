@@ -1,0 +1,7 @@
+(executable
+ (name mox)
+ (public_name mox)
+ (libraries notty notty.unix)
+ (foreign_archives mox_engine))
+ 
+ 
