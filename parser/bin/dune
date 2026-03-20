@@ -1,7 +1,9 @@
 (executable
- (name mox)
- (public_name mox)
+ (name main)
  (libraries notty notty.unix)
- (foreign_archives mox_engine))
- 
- 
+ (link_flags (:standard 
+              -cclib -L%{project_root}/engine/target/release 
+              -cclib -lengine 
+              -cclib -lpthread 
+              -cclib -ldl 
+              -cclib -lm)))
