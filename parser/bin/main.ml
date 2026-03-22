@@ -10,3 +10,5 @@ let () =
   let buf = create_buffer () in
     move_cursor_left buf;
     move_cursor_right buf;
+
+let () = 
