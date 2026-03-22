@@ -91,4 +91,3 @@ pub fn move_cursor_right(mut pointer: ocaml::Pointer<GapBuffer>) {
     
 }
 
-
