@@ -1,34 +1,48 @@
-use ratatui::Frame;
-use ratatui::layout::{Constraint, Layout};
-use ratatui::style::{Color, Modifier, Style, Stylize};
-use ratatui::text::{Line, Span};
-use ratatui::widgets::{Block, Paragraph};
+use std::io::stdout;
+use crossterm;
+use ratatui;
+use ratatui::prelude::CrosstermBackend;
 
-fn draw(frame: &mut Frame) {
-    let areas = Layout::vertical([Constraint::Length(1); 4]).split(frame.area());
-
-    let line = Line::from(vec![
-        Span::raw("Hello "),
-        Span::styled(
-            "World",
-            Style::new()
-                .fg(Color::Green)
-                .bg(Color::White)
-                .add_modifier(Modifier::BOLD),
-        ),
-        "!".red().on_light_yellow().italic(),
-    ]);
-    frame.render_widget(line, areas[0]);
-
-    // using the short-hand syntax and implicit conversions
-    let paragraph = Paragraph::new("Hello World!".red().on_white().bold());
-    frame.render_widget(paragraph, areas[1]);
-
-    // style the whole widget instead of just the text
-    let paragraph = Paragraph::new("Hello World!").style(Style::new().red().on_white());
-    frame.render_widget(paragraph, areas[2]);
-
-    // use the simpler short-hand syntax
-    let paragraph = Paragraph::new("Hello World!").blue().on_yellow();
-    frame.render_widget(paragraph, areas[3]);
+pub fn read_file(path: &str) -> String{
+    let path_string: String = std::fs::read_to_string(path).unwrap_or_default();
+    
+    path_string
 }
+
+
+
+fn init_terminal() -> std::io::Result<ratatui::Terminal<CrosstermBackend<std::io::Stdout>>> {
+    crossterm::terminal::enable_raw_mode()?;
+    crossterm::execute!(stdout(), crossterm::terminal::EnterAlternateScreen)?;
+    let backend = CrosstermBackend::new(stdout());
+    ratatui::Terminal::new(backend) 
+}
+
+fn cleanup_terminal() {
+    crossterm::execute!(stdout(), crossterm::terminal::LeaveAlternateScreen).ok();
+    crossterm::terminal::disable_raw_mode().ok();
+}
+
+pub fn entry_point(path: &str) {
+    let mut terminal = init_terminal().expect("Failed");
+    let file_contents = read_file(path);
+    
+    loop {
+        terminal.draw(|frame| {
+            let paragraph = ratatui::widgets::Paragraph::new(file_contents.as_str());
+            frame.render_widget(paragraph, frame.area());
+        }).expect("draw failed");
+    
+        if crossterm::event::poll(std::time::Duration::from_millis(100)).unwrap_or(false) {
+            if let crossterm::event::Event::Key(key) = crossterm::event::read().unwrap() {
+                match key.code {
+                    crossterm::event::KeyCode::Char('q') => break,
+                    _ => {}
+                }
+            }
+        }
+    }
+    cleanup_terminal();
+}
+
+
