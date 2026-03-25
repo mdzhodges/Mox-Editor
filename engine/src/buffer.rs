@@ -31,6 +31,42 @@ pub fn move_cursor_left(buffer: &mut GapBuffer) {
     buffer.gap_end -= char_len;
 }
 
+pub fn load_content(buffer: &mut GapBuffer, content: &[u8]) {
+    let gap = buffer.gap_size;
+    let total = gap + content.len();
+    let mut new_buf = vec![0u8; total];
+    new_buf[gap..].copy_from_slice(content);
+    buffer.buffer = new_buf;
+    buffer.gap_start = 0;
+    buffer.gap_end = gap;
+    buffer.gap_size = total;
+}
+
+pub fn get_content(buffer: &GapBuffer) -> Vec<u8> {
+    let gap_len = buffer.gap_end - buffer.gap_start;
+    let content_len = buffer.gap_size - gap_len;
+    let mut out = Vec::with_capacity(content_len);
+    out.extend_from_slice(&buffer.buffer[..buffer.gap_start]);
+    out.extend_from_slice(&buffer.buffer[buffer.gap_en d..buffer.gap_size]);
+    out
+}
+
+pub fn cursor_position(buffer: &GapBuffer) -> (usize, usize) {
+    let pre = &buffer.buffer[..buffer.gap_start];
+    let row = pre.iter().filter(|&&b| b == b'\n').count();
+    let col = pre.iter().rev().take_while(|&&b| b != b'\n').count();
+    (row, col)
+}
+
+pub fn move_cursor_to(buffer: &mut GapBuffer, offset: usize) {
+    while buffer.gap_start < offset {
+        move_cursor_right(buffer);
+    }
+    while buffer.gap_start > offset {
+        move_cursor_left(buffer);
+    }
+}
+
 pub fn move_cursor_right(buffer: &mut GapBuffer) {
     if buffer.gap_end == buffer.gap_size {
         return;
