@@ -47,7 +47,7 @@ pub fn get_content(buffer: &GapBuffer) -> Vec<u8> {
     let content_len = buffer.gap_size - gap_len;
     let mut out = Vec::with_capacity(content_len);
     out.extend_from_slice(&buffer.buffer[..buffer.gap_start]);
-    out.extend_from_slice(&buffer.buffer[buffer.gap_en d..buffer.gap_size]);
+    out.extend_from_slice(&buffer.buffer[buffer.gap_end..buffer.gap_size]);
     out
 }
 
